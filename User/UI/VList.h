@@ -10,6 +10,7 @@
 #define MAX_LIST_ITEMS 16
 #define VLIST_ITEM_H 14
 #define ALERT_TITLE		"alert"
+#define VLIST_ANIM_FUC		QuadraticEaseOut
 
 extern const Screen_t g_screen_cfg;
 
@@ -17,16 +18,37 @@ typedef enum {
   VITEM_CLICK = 0,        // 按钮
   VITEM_NUM_EDIT,         // 数字
   VITEM_SUBMENU,          // 子菜单
-  VITEM_ACTION,           // 普通（不传入Callback时可以当作文本使用）
-  VITEM_PROTECTED_SUBMENU // 带保护的子菜单
+  VITEM_ACTION,           // 组件入口
+  VITEM_PLAIN_TEXT,       // 纯文本
+  VITEM_PROTECTED_SUBMENU, // 带保护的子菜单
+  VITEM_PROTECTED_ACTION   // 带保护的组件入口
 } vitem_type_t;
+
+// 扩展ACTION项的用户数据结构
+typedef struct {
+    const page_component_t *comp;  // 目标组件
+    void *ctx;                     // 组件上下文
+} vlist_action_data_t;
+
+// 带保护的ACTION数据结构（新增）
+typedef struct {
+    vlist_action_data_t action_data; // 组件跳转数据
+    bool guard_flag;                 // 保护标志
+    char *alert_text;                // 保护提示文本
+} vlist_protected_action_data_t;
 
 typedef struct {
   const char *title;
   vitem_type_t type;
-  void *user_data; // bool, float 或 vlist_t，存储用户数据
+  void *user_data; // 不同类型对应不同数据：
+                   // - VITEM_CLICK: bool*
+                   // - VITEM_NUM_EDIT: float*
+                   // - VITEM_SUBMENU/VITEM_PROTECTED_SUBMENU: vlist_t*
+                   // - VITEM_ACTION: vlist_action_data_t*
+                   // - VITEM_PROTECTED_ACTION: vlist_protected_action_data_t*（新增）
+                   // - VITEM_PLAIN_TEXT: NULL
   float min, max, step;
-  void (*callback)(void *ctx);
+  void (*callback)(void *ctx);     // 保留原有回调
   // 保护子菜单扩展字段
   bool guard_flag;  // 保护标志
   char *alert_text; // 保护提示文本
@@ -61,11 +83,13 @@ void vlist_add_toggle(vlist_t *list, const char *title, bool *val);
 void vlist_add_num(vlist_t *list, const char *title, float *val, float min,
                    float max, float step);
 void vlist_add_submenu(vlist_t *list, const char *title, vlist_t *child);
-void vlist_add_action(vlist_t *list, const char *title, void (*cb)(void *ctx),
-                      void *ctx);
-void vlist_add_text(vlist_t *list, const char *title);
+void vlist_add_action(vlist_t *list, const char *title, const page_component_t *comp, void *ctx);
+void vlist_add_plain_text(vlist_t *list, const char *title);
 void vlist_add_protected_submenu(vlist_t *list, const char *title,
                                  vlist_t *child, bool guard_flag,
                                  char *alert_text);
+void vlist_add_protected_action(vlist_t *list, const char *title, 
+                                const page_component_t *comp, void *ctx,
+                                bool guard_flag, char *alert_text);
 
 #endif

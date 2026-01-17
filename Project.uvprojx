@@ -340,7 +340,7 @@
               <MiscControls></MiscControls>
               <Define>USE_STDPERIPH_DRIVER</Define>
               <Undefine></Undefine>
-              <IncludePath>.\Start;.\Library;.\User;.\System;.\Hardware;.\Library\u8g2;.\Library\Delay;.\User\AHEasing;.\User\UI</IncludePath>
+              <IncludePath>.\Start;.\Library;.\User;.\System;.\Hardware;.\Library\u8g2;.\Library\Delay;.\User\AHEasing;.\User\UI;.\User\UI\component</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -1078,6 +1078,21 @@
               <FileName>HList.h</FileName>
               <FileType>5</FileType>
               <FilePath>.\User\UI\HList.h</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>brick</GroupName>
+          <Files>
+            <File>
+              <FileName>brick_break.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\User\UI\component\brick_break.c</FilePath>
+            </File>
+            <File>
+              <FileName>brick_break.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\User\UI\component\brick_break.h</FilePath>
             </File>
           </Files>
         </Group>
