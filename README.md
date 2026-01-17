@@ -3,8 +3,27 @@
 测试平台:  
 - stm32f103c8t6 （标准库实现）  
 - SSD1306(128x64)  
+### 推荐使用方式
+```c
+SplashScreen - HList - VList     - VList - ...
+                     |- component |- component
+```
 ## Usage (main.c)
 ```c
+#include "Delay.h"
+#include "HList.h"
+#include "VList.h"
+#include "brick_break.h"
+#include "btn_fifo.h"
+#include "page_stack.h"
+#include "screen.h"
+#include "splash_screen.h"
+#include "stm32f10x.h"
+#include "u8g2.h"
+#include "uart.h"
+#include "ui.h"
+#include <math.h>
+
 extern const uint8_t icon_list[][128];
 
 #define ICON_SETTINGS 0x0081 // 设置图标
@@ -18,6 +37,7 @@ hlist_t g_main_hlist;
 vlist_t g_setting_main_menu;
 vlist_t g_setting_sub_menu;
 vlist_t g_about_menu;
+brick_break_ctx_t g_brick_break_ctx;
 
 bool g_wifi_state = false;
 bool g_bt_state = true;
@@ -91,6 +111,9 @@ static void ui_menu_init(void) {
   vlist_init(&g_about_menu, &g_page_stack.main_tick);
   hlist_init(&g_main_hlist, &g_page_stack.main_tick);
 
+  // 初始化打砖块游戏
+  brick_break_init(&g_brick_break_ctx, &g_page_stack.main_tick, &g_screen_cfg);
+
   // 设置菜单
   vlist_add_toggle(&g_setting_sub_menu, "WIFI Link", &g_wifi_state);
   vlist_add_num(&g_setting_sub_menu, "Brightness", &g_screen_brightness, 0, 100,
@@ -103,16 +126,31 @@ static void ui_menu_init(void) {
   vlist_add_protected_submenu(&g_setting_main_menu, "Protect.true",
                               &g_setting_sub_menu, true, "Try Again!");
 
+  // 添加OSC组件入口
+  vlist_add_action(&g_setting_main_menu, "Oscilloscope", &OSC_APP_COMP, NULL);
+  // 添加打砖块游戏入口
+  vlist_add_action(&g_setting_main_menu, "Brick Break", &BRICK_BREAK_COMP,
+                   &g_brick_break_ctx);
+  vlist_add_protected_action(&g_setting_main_menu, "Brick Break (locked)",
+                             &BRICK_BREAK_COMP, &g_brick_break_ctx, false,
+                             "This action is locked!");
+  vlist_add_protected_action(&g_setting_main_menu, "Brick Break (unlocked)",
+                             &BRICK_BREAK_COMP, &g_brick_break_ctx, true,
+                             "This action is locked!");
+
   // 关于菜单
-  vlist_add_text(&g_about_menu, "Version: 0.0.1");
-  vlist_add_text(&g_about_menu, "Author: dggdoo");
-  vlist_add_text(&g_about_menu, "Build: 2026-01");
+  vlist_add_plain_text(&g_about_menu, "Version: 0.0.1");
+  vlist_add_plain_text(&g_about_menu, "Author: dggdoo");
+  vlist_add_plain_text(&g_about_menu, "Build: 2026-01");
 
   // 主菜单
   hlist_add_glyph_item(&g_main_hlist, "SETTINGS", ICON_SETTINGS, &VLIST_COMP,
                        &g_setting_main_menu);
   hlist_add_xbm_item(&g_main_hlist, "OSCILLO", icon_list[3], &OSC_APP_COMP,
                      NULL);
+  // 添加打砖块游戏到主菜单
+  hlist_add_glyph_item(&g_main_hlist, "BRICK GAME", ICON_ABOUT,
+                       &BRICK_BREAK_COMP, &g_brick_break_ctx);
   hlist_add_glyph_item(&g_main_hlist, "ABOUT", ICON_ABOUT, &VLIST_COMP,
                        &g_about_menu);
   hlist_add_protected_glyph_item(&g_main_hlist, "Protected.false", ICON_LOCK,
@@ -153,6 +191,7 @@ static void uart_btn_process(void) {
     default:
       break;
     }
+    uart_debug_printf("rev:%c\r\n", ch);
   }
 }
 
@@ -171,9 +210,6 @@ int main(void) {
     btn_type_t btn = btn_fifo_pop();
 
     page_update(&g_page_stack, btn);
-
-    // 3. 帧率控制
-    Delay_ms(10);
   }
 }
 ```
