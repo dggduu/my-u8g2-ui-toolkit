@@ -1,4 +1,4 @@
-#include "SplashSreen.h"
+#include "splash_screen.h"
 #include "btn_fifo.h"
 #include <string.h>
 

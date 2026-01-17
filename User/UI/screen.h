@@ -1,6 +1,7 @@
 #ifndef __SCREEN_H__
 #define __SCREEN_H__
 #include "u8g2.h"
+#include "stdbool.h"
 
 // ===================== 前置类型定义 =====================
 // 文字绘制回调函数类型（适配UTF8/普通字符串）
@@ -17,10 +18,11 @@ typedef struct {
   const uint8_t *font;   // 使用的字体
   uint8_t font_height;   // 字体高度
   uint8_t font_baseline; // 字体基线偏移
+	const uint8_t *sub_window_font;	// 子窗口使用的字体
   
   // 文本编码配置（新增）
   bool is_utf8;                  // UTF8编码标志：true=使用UTF8绘制，false=使用普通ASCII
-  screen_draw_text_cb_t draw_text; // 自定义文字绘制回调（自动适配UTF8/Str）
+  screen_draw_text_cb_t draw_text; // 自定义文字绘制回调
   
   // 布局基础配置
   uint8_t title_left_margin;       // 标题左侧边距
@@ -65,6 +67,7 @@ static inline void screen_draw_str(u8g2_t *u8g2, uint16_t x, uint16_t y, const c
       .width = 128,                 /* 屏幕宽度 */                             \
       .height = 64,                 /* 屏幕高度 */                             \
       .font = u8g2_font_6x10_tf, /* 使用的字体 */       \
+	  .sub_window_font = u8g2_font_5x7_tf,										\
       .font_height = 10,            /* 字体高度 */                             \
       .font_baseline = 10,          /* 字体基线 */                             \
       .is_utf8 = false,              /* UTF8启用标志 */       \
@@ -82,7 +85,7 @@ static inline void screen_draw_str(u8g2_t *u8g2, uint16_t x, uint16_t y, const c
       .num_min_width = 30           /* NUM类型最小宽度 */                      \
   }
 
-// 全局屏幕配置实例（修改为extern，方便外部修改配置）
+// 全局屏幕配置实例
 extern const Screen_t g_screen_cfg;
 
 #endif

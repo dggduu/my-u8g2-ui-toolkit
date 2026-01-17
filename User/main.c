@@ -1,6 +1,6 @@
 #include "Delay.h"
 #include "HList.h"
-#include "SplashSreen.h"
+#include "splash_screen.h"
 #include "VList.h"
 #include "btn_fifo.h"
 #include "page_stack.h"
@@ -10,9 +10,8 @@
 #include "ui.h"
 #include <math.h>
 #include "screen.h"
-extern const Screen_t g_screen_cfg;
 extern const uint8_t icon_list[][128];
-
+const Screen_t g_screen_cfg = DEFAULT_SCREEN_CONFIG;
 u8g2_t u8g2;
 hlist_t g_main_hlist;
 vlist_t g_setting_main_menu;
@@ -39,7 +38,7 @@ static void my_splash_draw(u8g2_t *u8g2, const Screen_t *screen_cfg) {
   uint8_t hour = 12, min = 30, sec = (tick_count / 10) % 60;
   char time_str[10];
   sprintf(time_str, "%02d:%02d:%02d", hour, min, sec);
-  u8g2_SetFont(u8g2, u8g2_font_spleen12x24_mn);
+  u8g2_SetFont(u8g2, u8g2_font_logisoso16_tn);
   int time_width = u8g2_GetStrWidth(u8g2, time_str);
   u8g2_DrawStr(u8g2, (screen_cfg->width - time_width) / 2,
                screen_cfg->height / 2, time_str);

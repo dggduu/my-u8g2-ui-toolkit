@@ -29,10 +29,10 @@ static void draw_hlist_alert_window(u8g2_t *u8g2, const Screen_t *screen_cfg,
   u8g2_DrawFrame(u8g2, x, y, w, h);
 
   // 绘制Alert标题
-  u8g2_SetFont(u8g2, screen_cfg->font);
+  u8g2_SetFont(u8g2, screen_cfg->sub_window_font);
   const char *alert_title = "Alert";
   int title_width = u8g2_GetStrWidth(u8g2, alert_title);
-  u8g2_DrawStr(u8g2, x + (w - title_width) / 2, y + 12, alert_title);
+  g_screen_cfg.draw_text(u8g2, x + (w - title_width) / 2, y + 12, alert_title);
 
   u8g2_DrawHLine(u8g2, x + 5, y + 15, w - 10);
 
@@ -50,13 +50,13 @@ static void draw_hlist_alert_window(u8g2_t *u8g2, const Screen_t *screen_cfg,
     text_x = x + 5 - offset;
 
     u8g2_SetClipWindow(u8g2, x + 5, clip_y1, x + w - 5, clip_y2);
-    u8g2_DrawStr(u8g2, text_x, y + 27, hl->alert.text);
-    u8g2_DrawStr(u8g2, text_x + text_width + 10, y + 27, hl->alert.text);
+    g_screen_cfg.draw_text(u8g2, text_x, y + 27, hl->alert.text);
+    g_screen_cfg.draw_text(u8g2, text_x + text_width + 10, y + 27, hl->alert.text);
     u8g2_SetMaxClipWindow(u8g2);
   } else {
     // 文本宽度不足，直接居中
     text_x = x + (w - text_width) / 2;
-    u8g2_DrawStr(u8g2, text_x, y + 27, hl->alert.text);
+    g_screen_cfg.draw_text(u8g2, text_x, y + 27, hl->alert.text);
   }
 }
 
@@ -178,11 +178,11 @@ void hlist_draw(u8g2_t *u8g2, void *ctx) {
           text_y_start - (int)((text_y_start - text_y_target) * text_p);
 
       int text_x = (screen_cfg->width - u8g2_GetStrWidth(u8g2, title)) / 2;
-      u8g2_DrawStr(u8g2, text_x, text_y, title);
+      g_screen_cfg.draw_text(u8g2, text_x, text_y, title);
     } else {
       // 动画结束，固定位置显示
       int text_x = (screen_cfg->width - u8g2_GetStrWidth(u8g2, title)) / 2;
-      u8g2_DrawStr(u8g2, text_x, text_base_y, title);
+      g_screen_cfg.draw_text(u8g2, text_x, text_base_y, title);
     }
   }
 

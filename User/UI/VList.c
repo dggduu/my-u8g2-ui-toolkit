@@ -55,7 +55,7 @@ static void draw_scroll_text_with_pause(u8g2_t *u8g2,
 
   int text_width = u8g2_GetStrWidth(u8g2, text);
   if (text_width <= max_width) {
-    u8g2_DrawStr(u8g2, start_x, y, text);
+    g_screen_cfg.draw_text(u8g2, start_x, y, text);
     return;
   }
 
@@ -68,7 +68,7 @@ static void draw_scroll_text_with_pause(u8g2_t *u8g2,
 
   if (cycle_tick < pause_ticks) {
     u8g2_SetClipWindow(u8g2, start_x, clip_y1, start_x + max_width, clip_y2);
-    u8g2_DrawStr(u8g2, start_x, y, text);
+    g_screen_cfg.draw_text(u8g2, start_x, y, text);
     u8g2_SetMaxClipWindow(u8g2);
     return;
   }
@@ -78,8 +78,8 @@ static void draw_scroll_text_with_pause(u8g2_t *u8g2,
   int draw_x = start_x - offset;
 
   u8g2_SetClipWindow(u8g2, start_x, clip_y1, start_x + max_width, clip_y2);
-  u8g2_DrawStr(u8g2, draw_x, y, text);
-  u8g2_DrawStr(u8g2, draw_x + total_len, y, text);
+  g_screen_cfg.draw_text(u8g2, draw_x, y, text);
+  g_screen_cfg.draw_text(u8g2, draw_x + total_len, y, text);
   u8g2_SetMaxClipWindow(u8g2);
 }
 
@@ -115,7 +115,7 @@ static void draw_num_window(u8g2_t *u8g2, const Screen_t *screen_cfg,
   u8g2_SetDrawColor(u8g2, 1);
   u8g2_DrawFrame(u8g2, x, y, w, h);
 
-  u8g2_SetFont(u8g2, screen_cfg->font);
+  u8g2_SetFont(u8g2, screen_cfg->sub_window_font);
 
   uint8_t clip_y1 = y + 1;
   uint8_t clip_y2 = y + 13;
@@ -138,15 +138,15 @@ static void draw_num_window(u8g2_t *u8g2, const Screen_t *screen_cfg,
     ratio = 0.0f;
   u8g2_DrawBox(u8g2, bx + 2, by + 2, (int)((bw - 4) * ratio), bh - 4);
 
-  u8g2_SetFont(u8g2, screen_cfg->font);
+  u8g2_SetFont(u8g2, screen_cfg->sub_window_font);
   sprintf(buf, "%.1f", it->min);
-  u8g2_DrawStr(u8g2, bx, y + 42, buf);
+  g_screen_cfg.draw_text(u8g2, bx, y + 42, buf);
 
   sprintf(buf, "%.1f", it->step);
-  u8g2_DrawStr(u8g2, x + (w - u8g2_GetStrWidth(u8g2, buf)) / 2, y + 42, buf);
+  g_screen_cfg.draw_text(u8g2, x + (w - u8g2_GetStrWidth(u8g2, buf)) / 2, y + 42, buf);
 
   sprintf(buf, "%.1f", it->max);
-  u8g2_DrawStr(u8g2, x + w - u8g2_GetStrWidth(u8g2, buf) - 10, y + 42, buf);
+  g_screen_cfg.draw_text(u8g2, x + w - u8g2_GetStrWidth(u8g2, buf) - 10, y + 42, buf);
 }
 
 /**
@@ -173,10 +173,10 @@ static void draw_alert_window(u8g2_t *u8g2, const Screen_t *screen_cfg,
   u8g2_SetDrawColor(u8g2, 1);
   u8g2_DrawFrame(u8g2, x, y, w, h);
 
-  u8g2_SetFont(u8g2, screen_cfg->font);
+  u8g2_SetFont(u8g2, screen_cfg->sub_window_font);
   const char *alert_title = ALERT_TITLE;
   int title_width = u8g2_GetStrWidth(u8g2, alert_title);
-  u8g2_DrawStr(u8g2, x + (w - title_width) / 2, y + 12, alert_title);
+  g_screen_cfg.draw_text(u8g2, x + (w - title_width) / 2, y + 12, alert_title);
 
   u8g2_DrawHLine(u8g2, x + 5, y + 15, w - 10);
 
@@ -292,7 +292,7 @@ void vlist_draw(u8g2_t *u8g2, void *ctx) {
 
     if (curr_item->type == VITEM_SUBMENU ||
         curr_item->type == VITEM_PROTECTED_SUBMENU) {
-      u8g2_DrawStr(u8g2, 5, item_y, "-");
+      g_screen_cfg.draw_text(u8g2, 5, item_y, "-");
     }
 
     // ========== ªÊ÷∆±ÍÃ‚ ==========
