@@ -214,3 +214,5 @@ int main(void) {
   }
 }
 ```
+## Special Thanks
+[AHEasing](https://github.com/warrenm/AHEasing)
