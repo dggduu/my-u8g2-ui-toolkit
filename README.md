@@ -1,5 +1,5 @@
-![](https://raw.githubusercontent.com/dggduu/my-u8g2-oled-framework/main/IMG/title.jpg)
-## dggduu's OLED UI FrameWork
+![](https://raw.githubusercontent.com/dggduu/my-u8g2-ui-toolkit/main/IMG/title.jpg)
+## dggduu's OLED UI Toolkit
 - 中间层: u8g2  
 测试平台:  
 - stm32f103c8t6 （标准库实现）  
@@ -10,7 +10,7 @@
                               |- component  |- component
                               |- ...        |- ...
 ```
-![](https://raw.githubusercontent.com/dggduu/my-u8g2-oled-framework/main/IMG/recommended-structure.jpg)
+![](https://raw.githubusercontent.com/dggduu/my-u8g2-ui-toolkit/main/IMG/recommended-structure.jpg)
 #### splash_log
 一套用于提供类似终端输出的组件，基于 vsnprintf
 ## How to use
