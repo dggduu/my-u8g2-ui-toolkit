@@ -31,7 +31,7 @@ static uint8_t get_right_item_width(u8g2_t *u8g2, const Screen_t *screen_cfg,
   case VITEM_SUBMENU:
   case VITEM_PROTECTED_SUBMENU:
     return 0;
-  case VITEM_PLAIN_TEXT: // 纯文本无右侧元素
+  case VITEM_PLAIN_TEXT:
     return 0;
   default:
     return 0;
@@ -321,7 +321,7 @@ void vlist_draw(u8g2_t *u8g2, void *ctx) {
         curr_item->type == VITEM_PROTECTED_SUBMENU) {
       g_screen_cfg.draw_text(u8g2, 5, item_y, "-");
     }
-    // ACTION项添加箭头标识（区分组件入口）
+    // ACTION项添加箭头标识
     else if (curr_item->type == VITEM_ACTION) {
       g_screen_cfg.draw_text(u8g2, 5, item_y, ">");
     }

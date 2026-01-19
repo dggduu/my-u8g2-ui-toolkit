@@ -8,7 +8,8 @@
 SplashScreen - HList - VList     - VList - ...
                      |- component |- component
 ```
-## Usage (main.c)
+![](https://raw.githubusercontent.com/dggduu/my-u8g2-oled-framework/main/IMG/recommended-structure.jpg)
+## How to use
 ```c
 #include "Delay.h"
 #include "HList.h"
