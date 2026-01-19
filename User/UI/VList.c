@@ -122,7 +122,7 @@ void vlist_draw(u8g2_t *u8g2, void *ctx) {
       u8g2_DrawRBox(u8g2, box_x, box_y, cur_box_w, screen_cfg->highlight_height, g_screen_cfg.hightlight_radius);
 
       int text_clip_x = box_x + 2;
-      int text_clip_w = cur_box_w - 4;
+      int text_clip_w = cur_box_w - 8;
       clip_y1 = box_y + 1;
       clip_y2 = box_y + screen_cfg->highlight_height - 1;
 
