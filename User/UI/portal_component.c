@@ -29,7 +29,7 @@ static void portal_messagebox_draw(u8g2_t *u8g2, int16_t x, int16_t y, uint8_t w
     }
 }
 
-static void portal_mbox_input(int btn, void *ctx) {
+static void portal_message_box_input(int btn, void *ctx) {
     if (btn == BTN_ENTER || btn == BTN_BACK) {
         page_stack_portal_toggle(&g_page_stack, NULL, NULL, 0);
     }
@@ -37,7 +37,7 @@ static void portal_mbox_input(int btn, void *ctx) {
 
 const portal_component_t PORTAL_MESSAGE_BOX = {
     .draw = portal_messagebox_draw, 
-    .input = portal_mbox_input,
+    .input = portal_message_box_input,
     .w = 100, 
     .h = 35
 };
