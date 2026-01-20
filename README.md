@@ -1,5 +1,6 @@
 ![](https://raw.githubusercontent.com/dggduu/my-u8g2-ui-toolkit/main/IMG/title.jpg)
 ## dggduu's OLED UI Toolkit
+尝试做一套基于 u8g2 的 UI 工具集，目标是在裸机环境下能使用 MVC 设计模式进行多级菜单页面的开发。
 - 中间层: u8g2  
 测试平台:  
 - stm32f103c8t6 （标准库实现）  
@@ -17,8 +18,7 @@
 ### splash_log
 一套用于提供类似终端输出的组件，基于 vsnprintf , 适用于初始化阶段，文本溢出后自动换行。注意该函数不是页面栈的一部分，通过调用 splash_log_printf 才会刷新屏幕缓冲区，不建议与会经常刷新缓冲区的函数一起使用。
 ### splash_screen
-类似前端概念中的 应用启动页（splash_screen），可以用于手表界面的首屏，也可以当黑屏使用通过添加全局回调或者使用 splash_screen_jump() 函数，可以实现在任意界面直接跳转到 splash_screen，跳转后页面栈将清空。  
-当
+类似前端概念中的 应用启动页（splash_screen），可以用于锁屏界面，也可以当黑屏。使用通过添加全局回调或者使用 `splash_screen_jump()` 函数，可以实现在任意界面直接跳转到 splash_screen。  
 ### Portal
 （仅对页面栈类组件有效，splash_log状态无法调用）  
 类似 React 开发中的 portal 组件，用于将自定义绘制回调绘制在最顶层，当激活时将拦截原本要传入到底层的 btn_fifo 并传给相应 portal组件 的 input 回调  
@@ -70,9 +70,19 @@ const portal_component_t PORTAL_MESSAGE_BOX = {
 extern const portal_component_t PORTAL_MESSAGE_BOX;
 ```
 ### Protected 组件
-灵感来自 Expo 中的Protected Route，但是这里没有Route的概念，后续可能会留出`guard_flag = false`时的回调，用于像是重新联网、重新加载数据等  
+灵感来自 Expo 中的Protected Route  
 当 guard_flag 为 false 时弹出弹窗，并无法进行下一步操作（如跳转到下一个page,menu...）  
-当 guard_flag 为 true 时不会弹出弹窗，直接进行下一步操作
+当 guard_flag 为 true 时不会弹出弹窗，直接进行下一步操作  
+#### 子类
+##### protected_action：进入自定义页面
+##### protected_submenu：进入下一级List菜单
+##### protected_progress(实验性功能，需要前往`portal_component.h` 将对应宏定义开启)
+此组件目标是在无OS环境提供一个便捷的执行回调并打印对应进度的功能，适用于连接网络，上传表单等需要长时间等待的任务  
+用于传入一个执行回调，并能够显示回调的进度，失败后显示`[error]`,成功显示`[OK]`。  
+执行流程：  
+用户点击组件->弹出portal,询问再次确认->portal与page的draw与input回调暂停执行，执行权交由自定义执行回调->执行回调可以通过`Progress_Log(ctx, msg)`刷新portal组件所在的屏幕缓冲区，以实现告知用户进度，在执行回调执行过程中允许多次调用->执行回调主要逻辑结束，执行`Progress_SetSuccess(ctx);`告知完成，如果失败则需要调用`Progress_SetFailed(ctx,msg);`告知失败并返回失败原因->执行权交由页面栈管理，此时portal与页面正常刷新，这是可以关闭页面。  
+**这里的ctx是portal组件定义的，不需要用户手动编写，只需照抄即可**  
+
 ### 自定义组件
 通过编写绘制回调（draw_handler）以及输入回调（input_handler）,并使用注册函数进行注册
 ```c
@@ -81,6 +91,10 @@ const page_component_t OSC_APP_COMP = {.draw = osc_app_draw,.input = osc_app_inp
 通过该方式可以实现一个简单的MVC模式（Model: 全局变量/上下文，View：draw_handler，Controller：input_handler）  
 你可以查看main.c(下面的例程)中的`OSC_APP_COMP`以及`User - UI - Component`下面看看如何使用  
 
+## UTF8 support?
+本工具集将文本绘制函数进行了一层抽象，使用 `screen.h` 配置的 `.draw_text` 回调进行文本绘制，配置为`screen_draw_utf8`即可将通用组件的文本渲染逻辑更换为UTF8。  
+推荐自定义组件使用`screen.h`定义的变量，方便管理（这个文件就相当于dotenv）  
+**注意：`.is_utf8` 只是一个标志位，用于告知需要对utf8进行适配的组件，不是切换渲染逻辑的开关，即使用utf8时需要手动开启**
 ## How to porting
 将 `User - UI` 路径下的文件以及 btn_fifo 复制出来即可。btn_fifo.h 中定义了框架中所使用的按键类型，目前没有做按键类型桥接层的计划，需要自己实现。
 ## How to use
@@ -99,13 +113,14 @@ const page_component_t OSC_APP_COMP = {.draw = osc_app_draw,.input = osc_app_inp
 #include "uart.h"
 #include "ui.h"
 #include <math.h>
+#include "portal_component.h"
 
 extern const uint8_t icon_list[][128];
 
 #define ICON_SETTINGS 0x0081 // 设置图标
 #define ICON_ABOUT 0x0114    // 关于图标
-#define ICON_LOCK 0x0057     // 保护项图标
-#define ICON_UNLOCK 0x0078   // 保护项图标
+#define ICON_LOCK 0x0057     // 叉叉图标
+#define ICON_UNLOCK 0x0078   // 对勾图标
 
 const Screen_t g_screen_cfg = DEFAULT_SCREEN_CONFIG;
 u8g2_t u8g2;
@@ -119,6 +134,7 @@ bool g_wifi_state = false;
 bool g_bt_state = true;
 bool g_mute_mode = false;
 float g_screen_brightness = 50.0f;
+float test_num = 0;
 
 // ===================== 自定义SplashScreen =====================
 static void my_splash_draw(u8g2_t *u8g2, const Screen_t *screen_cfg) {
@@ -179,6 +195,23 @@ static void osc_app_input(int btn, void *ctx) {
 const page_component_t OSC_APP_COMP = {.draw = osc_app_draw,
                                        .input = osc_app_input};
 
+void my_long_task(void *ctx) {
+    Progress_Log(ctx, "Initializing...");
+    Delay_ms(500);
+
+    Progress_Log(ctx, "Erasing...");
+    Delay_ms(800);
+
+    for (int i = 0; i <= 100; i += 20) {
+        Progress_Log(ctx, "Writing: %d%%", i);
+        Delay_ms(200);
+    }
+
+    // 成功结束
+    //Progress_SetSuccess(ctx);
+  Progress_SetFailed(ctx,"no idea");
+}
+                     
 // ===================== 菜单初始化 =====================
 static void ui_menu_init(void) {
   // 初始化列表
@@ -195,6 +228,9 @@ static void ui_menu_init(void) {
   vlist_add_num(&g_setting_sub_menu, "Brightness", &g_screen_brightness, 0, 100,
                 5);
   vlist_add_submenu(&g_setting_main_menu, "System Config", &g_setting_sub_menu);
+  vlist_add_precise_num(&g_setting_main_menu, "Precise Num Test", &test_num,
+                        -100, 200, 3,0);
+  vlist_add_protected_progress(&g_setting_main_menu, "Save Config", my_long_task);
   vlist_add_toggle(&g_setting_main_menu, "Mute Mode", &g_mute_mode);
   vlist_add_toggle(&g_setting_main_menu, "Bluetooth", &g_bt_state);
   vlist_add_protected_submenu(&g_setting_main_menu, "Protect.false",
@@ -244,7 +280,7 @@ static void ui_menu_init(void) {
   page_stack_register_global_btn_cb(&g_page_stack, global_btn_handler);
   // 初始页面
   splash_screen_jump();
-  // 直接进入Hlist，需要将上面的SplashScreen相关的删除
+  // 如需直接进入Hlist，启用下面的函数，并将上面的SplashScreen相关的代码删除
   // page_stack_push(&g_page_stack, &HLIST_COMP, &g_main_hlist);
 }
 
