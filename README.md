@@ -1,6 +1,6 @@
 ![](https://raw.githubusercontent.com/dggduu/my-u8g2-ui-toolkit/main/IMG/title.jpg)
-## dggduu's OLED UI Toolkit
-尝试做一套基于 u8g2 的 UI 工具集，目标是在裸机环境下能使用 MVC 设计模式进行多级菜单页面的开发。
+## dggduu's U8g2 UI Toolkit
+尝试做一套基于事件驱动的U8g2 UI 工具集，目标是在裸机环境下能使用 MVC 设计模式进行多级菜单页面的开发。
 - 中间层: u8g2  
 测试平台:  
 - stm32f103c8t6 （标准库实现）  
